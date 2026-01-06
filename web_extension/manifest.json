@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Voldio Recorder Uploader",
+  "version": "1.0.0",
+  "description": "Record mic/system audio and auto-upload to your Voldio app dashboard.",
+  "action": {
+    "default_title": "Record & Upload",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "permissions": ["scripting", "activeTab", "storage", "tabs"],
+  "host_permissions": [
+    "http://localhost:8000/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "voldio@example.com",
+      "strict_min_version": "109.0"
+    }
+  },
+  "icons": {},
+  "minimum_chrome_version": "109"
+}

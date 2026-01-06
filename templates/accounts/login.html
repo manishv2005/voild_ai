@@ -1,0 +1,82 @@
+{% load socialaccount %}  <!-- 👈 Load the allauth social tag library -->
+
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Call Assistant - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#137fec",
+        "background-light": "#f6f7f8",
+        "background-dark": "#101922",
+      },
+      fontFamily: {
+        "display": ["Inter", "sans-serif"]
+      },
+      borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      boxShadow: {'glow': '0 0 0 3px rgba(19, 127, 236, 0.3)'},
+    },
+  },
+}
+</script>
+<style>
+.form-input:focus {
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden p-4 sm:p-6 group/design-root">
+  <div class="absolute inset-0 z-0 h-full w-full bg-background-light dark:bg-background-dark [background:radial-gradient(125%_125%_at_50%_10%,#fff_40%,#63e_100%)] dark:[background:radial-gradient(125%_125%_at_50%_10%,#101922_40%,#137fec_100%)] opacity-30"></div>
+
+  <div class="relative z-10 w-full max-w-md rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-sm shadow-2xl shadow-slate-300/10 dark:shadow-black/20">
+    <div class="flex flex-col p-8 md:p-10">
+      <div class="flex flex-col items-center gap-2">
+        <svg class="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24">
+          <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4Z" fill="currentColor"></path>
+          <path d="M12 7C10.3431 7 9 8.34315 9 10V14C9 15.6569 10.3431 17 12 17C13.6569 17 15 15.6569 15 14V10C15 8.34315 13.6569 7 12 7ZM11 10C11 9.44772 11.4477 9 12 9C12.5523 9 13 9.44772 13 10V14C13 14.5523 12.5523 15 12 15C11.4477 15 11 14.5523 11 14V10Z" fill="currentColor"></path>
+        </svg>
+        <h1 class="text-slate-900 dark:text-slate-100 tracking-tight text-3xl font-bold text-center">
+          Your Smart Meeting Companion
+        </h1>
+      </div>
+
+      <div class="mt-8">
+        <h3 class="text-slate-900 dark:text-slate-100 tracking-tight text-2xl font-bold text-center">
+          Sign In or Sign Up
+        </h3>
+      </div>
+
+      <div class="mt-6 flex flex-col gap-4">
+        <!-- ✅ GOOGLE SIGN-IN BUTTON -->
+        <a href="http://localhost:8000/accounts/google/login/"
+           class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 gap-3 text-base font-medium leading-normal tracking-[0.015em] transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <g clip-path="url(#clip0_303_110)">
+              <path d="M21.9999 12.2249C21.9999 11.3399 21.9249 10.4549 21.7899 9.59988H12.2149V14.4549H17.7649C17.5149 15.9399 16.6549 17.2049 15.3499 18.0699V20.8449H19.2399C20.9849 19.1699 21.9999 16.9249 21.9999 14.2499V12.2249Z" fill="#4285F4"></path>
+              <path d="M12.215 22C15.015 22 17.37 21.06 19.24 19.545L15.345 16.77C14.46 17.355 13.38 17.685 12.215 17.685C9.825 17.685 7.815 16.14 7.035 13.95H3.015V16.815C4.89 20.145 8.295 22 12.215 22Z" fill="#34A853"></path>
+              <path d="M7.03487 13.95C6.78487 13.245 6.63487 12.48 6.63487 11.7C6.63487 10.92 6.78487 10.155 7.03487 9.45V6.585H3.01487C2.36487 7.905 1.99987 9.375 1.99987 11.7C1.99987 14.025 2.36487 15.495 3.01487 16.815L7.03487 13.95Z" fill="#FBBC05"></path>
+              <path d="M12.215 5.715C13.62 5.715 14.805 6.195 15.705 7.065L19.32 3.45C17.37 1.635 15.015 0.5 12.215 0.5C8.295 0.5 4.89 2.85 3.015 6.18L7.035 9.045C7.815 6.855 9.825 5.715 12.215 5.715Z" fill="#EA4335"></path>
+            </g>
+            <defs><clipPath id="clip0_303_110"><rect fill="white" height="21" transform="translate(2 0.5)" width="20"></rect></clipPath></defs>
+          </svg>
+          <span class="truncate">Continue with Google</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+# ========================
+# Core Framework
+# ========================
+Django>=5.0,<6.0
+django-allauth>=65.0
+
+# ========================
+# Authentication & Security
+# ========================
+PyJWT>=2.10.0            # For handling JSON Web Tokens
+cryptography>=43.0.0     # Required for secure token signing/encryption
+django-cors-headers>=4.4.0
+
+# ========================
+# Google OAuth & APIs
+# ========================
+google-auth>=2.35.0
+google-auth-oauthlib>=1.2.1
+google-api-python-client>=2.154.0   # For Gmail, Calendar, Keep API integrations
+
+# ========================
+# Utilities
+# ========================
+requests>=2.31.0
+python-dotenv>=1.0.1     # For loading .env secrets (API keys, SECRET_KEY, etc.)
+python-dateutil>=2.9.0.post0   # Required by views (from dateutil import parser)
+pathlib                  # For cleaner filesystem paths (already stdlib, safe to include)
+Pillow>=10.0.0           # For image handling (static/media files)
+
+# ========================
+# Deployment (optional but recommended)
+# ========================
+gunicorn>=22.0.0         # WSGI HTTP server for production
+whitenoise>=6.6.0        # Serves static files in production
+
+# ========================
+# Development Tools (optional)
+# ========================
+black>=24.4.2            # Code formatter
+isort>=5.13.2            # Imports sorter

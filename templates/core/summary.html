@@ -1,0 +1,51 @@
+{% extends 'core/analysis_base.html' %}
+
+{% block content %}
+<div class="p-4 sm:p-6 bg-white/50 dark:bg-black/20 rounded-xl backdrop-blur-lg border border-white/30 dark:border-black/30 shadow-lg min-h-[600px]">
+<h2 class="text-[#0e1a1b] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-2 pb-3 pt-1 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">notes</span>
+<span>AI-Generated Notes</span>
+</h2>
+<div class="space-y-6 max-h-[calc(100vh-250px)] overflow-y-auto pr-2">
+
+    <div class="flex flex-col gap-4 rounded-xl bg-[#e7f2f3] dark:bg-white/10 p-5 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <span class="material-symbols-outlined text-lg">campaign</span>
+            </div>
+            <h3 class="text-lg font-bold text-[#0e1a1b] dark:text-white">Overall Summary</h3>
+        </div>
+        {% if summary %}
+            <p class="text-base font-normal leading-relaxed text-[#4e9197] dark:text-gray-300">
+                {{ summary.text|linebreaks }}
+            </p>
+        {% else %}
+            <p class="text-base font-normal leading-relaxed text-[#4e9197] dark:text-gray-300">
+                No summary was generated for this file.
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-col gap-4 rounded-xl bg-[#e7f2f3] dark:bg-white/10 p-5 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+                <span class="material-symbols-outlined text-lg">insights</span>
+            </div>
+            <h3 class="text-lg font-bold text-[#0e1a1b] dark:text-white">Key Points</h3>
+        </div>
+        {% if important_points %}
+            <ul class="list-disc space-y-2 pl-6 text-base font-normal leading-relaxed text-[#4e9197] dark:text-gray-300">
+                {% for point in important_points %}
+                    <li>{{ point.text }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-base font-normal leading-relaxed text-[#4e9197] dark:text-gray-300">
+                No important points were extracted.
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+</div>
+{% endblock %}

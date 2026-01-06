@@ -1,0 +1,16 @@
+{
+    "summary": "The meeting addressed the status of several reports and a presentation. Dheeraj's report is nearly complete and due today. Vansh needs to submit a PPT by tomorrow. Ayushi is responsible for submitting a second report today. Manish has already submitted the first report and possesses content relevant to Dheeraj's report.",
+    "todos": [
+        "Dheeraj: Send report to dheerajbalani3030@gmail.com by 6 PM today (2025-11-08).",
+        "Vansh: Send PPT before 12 PM tomorrow (2025-11-09).",
+        "Ayushi: Send the second report before 6 PM today (2025-11-08)."
+    ],
+    "email": "dheerajbalani3030@gmail.com",
+    "important_points": [
+        "Dheeraj's report is almost done and due by 6 PM today (2025-11-08).",
+        "Vansh must send the PPT before 12 PM tomorrow (2025-11-09).",
+        "Ayushi needs to send the second report before 6 PM today (2025-11-08).",
+        "Manish has the content for Dheeraj's report and has already submitted the first report.",
+        "The team is running out of time and needs to hurry up with submissions."
+    ]
+}

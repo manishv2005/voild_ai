@@ -1,0 +1,506 @@
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Call Assistant - Your Recordings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#30d9e8",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#112021",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            @apply font-display bg-background-light dark:bg-background-dark;
+        }
+
+        /* --- Modal Styles --- */
+        #modal-backdrop, #loading-overlay, #player-modal-backdrop {
+            @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] hidden;
+        }
+        #upload-modal, #audio-player-modal {
+            @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] hidden;
+            @apply w-full max-w-lg p-6 bg-white dark:bg-background-dark rounded-xl shadow-2xl;
+        }
+        
+        /* --- Spinner Styles --- */
+        #loading-overlay {
+            @apply flex flex-col items-center justify-center z-[110] hidden;
+        }
+        .spinner {
+            @apply w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin;
+        }
+
+        /* --- ✅ NAYA: Audio Player Modal Styles --- */
+        #audio-player-modal {
+            @apply max-w-xl; /* Thoda chauda */
+        }
+        #waveform {
+            @apply w-full h-24; /* Waveform ke liye height */
+        }
+        /* WaveSurfer.js ko primary color dene ke liye */
+        #waveform::part(wave) {
+            border-color: #30d9e8;
+        }
+        #waveform::part(progress) {
+            background-color: rgba(48, 217, 232, 0.3);
+        }
+</style>
+</head>
+<body class="relative">
+
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-8 md:px-12 lg:px-20 xl:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col w-full max-w-6xl flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-black/10 dark:border-white/10 px-2 sm:px-4 md:px-6 lg:px-10 py-3">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.8261 17.4264C16.7203 18.1174 20.2244 18.5217 24 18.5217C27.7756 18.5217 31.2797 18.1174 34.1739 17.4264C36.9144 16.7722 39.9967 15.2331 41.3563 14.1648L24.8486 40.6391C24.4571 41.267 23.5429 41.267 23.1514 40.6391L6.64374 14.1648C8.00331 15.2331 11.0856 16.7722 13.8261 17.4264Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M39.998 12.236C39.9944 12.2537 39.9875 12.2845 39.9748 12.3294C39.9436 12.4399 39.8949 12.5741 39.8346 12.7175C39.8168 12.7597 39.7989 12.8007 39.7813 12.8398C38.5103 13.7113 35.9788 14.9393 33.7095 15.4811C30.9875 16.131 27.6413 16.5217 24 16.5217C20.3587 16.5217 17.0125 16.131 14.2905 15.4811C12.0012 14.9346 9.44505 13.6897 8.18538 12.8168C8.17384 12.7925 8.16216 12.767 8.15052 12.7408C8.09919 12.6249 8.05721 12.5114 8.02977 12.411C8.00356 12.3152 8.00039 12.2667 8.00004 12.2612C8.00004 12.261 8 12.2607 8.00004 12.2612C8.00004 12.2359 8.0104 11.9233 8.68485 11.3686C9.34546 10.8254 10.4222 10.2469 11.9291 9.72276C14.9242 8.68098 19.1919 8 24 8C28.8081 8 33.0758 8.68098 36.0709 9.72276C37.5778 10.2469 38.6545 10.8254 39.3151 11.3686C39.9006 11.8501 39.9857 12.1489 39.998 12.236ZM4.95178 15.2312L21.4543 41.6973C22.6288 43.5809 25.3712 43.5809 26.5457 41.6973L43.0534 15.223C43.0709 15.1948 43.0878 15.1662 43.104 15.1371L41.3563 14.1648C43.104 15.l371 43.1038 15.1374 43.104 15.1371L43.1051 15.135L43.1065 15.1325L43.1101 15.1261L43.1199 15.1082C43.1276 15.094 43.1377 15.0754 43.1497 15.0527C43.1738 15.0075 43.2062 14.9455 43.244 14.8701C43.319 14.7208 43.4196 14.511 43.5217 14.2683C43.6901 13.8679 44 13.0689 44 12.2609C44 10.5573 43.003 9.22254 41.8558 8.2791C40.6947 7.32427 39.1354 6.55361 37.385 5.94477C33.8654 4.72057 29.133 4 24 4C18.867 4 14.1346 4.72057 10.615 5.94478C8.86463 6.55361 7.30529 7.32428 6.14419 8.27911C4.99695 9.22255 3.99999 10.5573 3.99999 12.2609C3.99999 13.1275 4.29264 13.9078 4.49321 14.3607C4.60375 14.6102 4.71348 14.8196 4.79687 14.9689C4.83898 15.0444 4.87547 15.1065 4.9035 15.1529C4.91754 15.1762 4.92954 15.1957 4.93916 15.2111L4.94662 15.223L4.95178 15.2312ZM35.9868 18.996L24 38.22L12.0131 18.996C12.4661 19.1391 12.9179 19.2658 13.3617 19.3718C16.4281 20.1039 20.0901 20.5217 24 20.5217C27.9099 20.5217 31.5719 20.1039 34.6383 19.3718C35.082 19.2658 35.5339 19.1391 35.9868 18.996Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">AI Call Assistant</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4">
+    {% if user.is_authenticated %}
+        <span class="text-slate-900 dark:text-white text-sm font-medium">
+            Hi, {{ user.first_name|default:user.username }}
+        </span>
+        <form method="POST" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200/80 dark:bg-slate-700/80 text-slate-800 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                <span class="truncate">Log Out</span>
+            </button>
+        </form>
+    {% else %}
+        <a href="{% url 'account_login' %}" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200/80 dark:bg-slate-700/80 text-slate-800 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+            <span class="truncate">Log In</span>
+        </a>
+    {% endif %}
+</div>
+</header>
+
+<main class="flex-1 mt-8">
+<div class="flex flex-wrap justify-between items-center gap-4 p-4 mb-4">
+<h1 class="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">Your Recordings</h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+
+    {% for audio in audio_files %}
+    <div class="flex flex-col gap-4 rounded-xl border border-black/10 dark:border-white/10 p-6 bg-white/50 dark:bg-background-dark/50 backdrop-blur-sm shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+        <h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">{{ audio.title }}</h3>
+        <div class="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm">
+            <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">timer</span>
+                (N/A)
+            </span>
+            <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">calendar_today</span>
+                {{ audio.uploaded_at|date:"M d, Y" }}
+            </span>
+        </div>
+<div class="flex items-center justify-between mt-2">
+            
+            <button type="button" 
+                    class="open-player-button flex items-center justify-center rounded-full size-10 bg-primary/20 text-slate-800 dark:text-white dark:bg-primary/30 hover:bg-primary/40 transition-colors"
+                    data-audio-url="{{ audio.audio_file.url }}"
+                    data-audio-title="{{ audio.title }}">
+                <span class="material-symbols-outlined">play_arrow</span>
+            </button>
+            
+            <a href="{% url 'summary_view' audio.id %}" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200/80 dark:bg-slate-700/80 text-slate-800 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                <span class="truncate">View Analysis</span>
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center py-20">
+        <div class="flex flex-col items-center gap-6">
+            <div class="flex items-center justify-center size-24 bg-slate-200 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined" style="font-size: 48px;">mic_off</span>
+            </div>
+            <div class="flex max-w-[480px] flex-col items-center gap-2">
+                <p class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] text-center">No recordings yet</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal text-center">Click 'Upload New Audio' to get started.</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+</div>
+</main>
+</div>
+</div>
+</div>
+
+<div class="fixed bottom-8 right-8 z-50 space-y-3">
+    <button id="record-fab" type="button" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-red-500 text-white text-base font-bold leading-normal tracking-[0.015em] min-w-0 gap-3 pl-5 pr-6 shadow-lg hover:shadow-xl transition-shadow">
+        <span class="material-symbols-outlined">mic</span>
+        <span class="truncate">Start Recording</span>
+    </button>
+    <button id="upload-fab" type="button" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 bg-primary text-slate-900 text-base font-bold leading-normal tracking-[0.015em] min-w-0 gap-3 pl-5 pr-6 shadow-lg hover:shadow-xl transition-shadow">
+        <span class="material-symbols-outlined text-slate-900">add</span>
+        <span class="truncate">Upload New Audio</span>
+    </button>
+</div>
+
+
+<div id="modal-backdrop"></div>
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <p class="text-white text-lg font-medium mt-4">Uploading and processing...</p>
+</div>
+<div id="upload-modal">
+    <form id="upload-form" method="POST" action="{% url 'upload_audio' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Upload New Audio</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-400">Provide a title and select your audio file to upload.</p>
+        
+        <div class="mt-6 space-y-4">
+            <div>
+                <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
+                <input type="text" name="title" id="title" class="mt-1 block w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary" required>
+            </div>
+
+            <div>
+                <label for="audio_file" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Audio File (Required)</label>
+                <input type="file" name="audio_file" id="audio_file" required accept="audio/*" class="mt-1 block w-full text-sm text-slate-500 dark:text-slate-400
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-primary/20 file:text-primary
+                    dark:file:bg-primary/30 dark:file:text-primary
+                    hover:file:bg-primary/30 dark:hover:file:bg-primary/40
+                    cursor-pointer">
+            </div>
+        </div>
+
+        <div class="mt-8 flex justify-end gap-4">
+            <button id="cancel-button" type="button" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 dark:hover:bg-slate-600">
+                Cancel
+            </button>
+            <button id="submit-button" type="submit" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90">
+                Upload
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="player-modal-backdrop"></div>
+<div id="audio-player-modal">
+    <div class="flex justify-between items-center mb-4">
+        <h2 id="player-title" class="text-2xl font-bold text-slate-900 dark:text-white truncate">
+            Loading...
+        </h2>
+        <button id="player-close-button" type="button" class="text-slate-500 hover:text-slate-800 dark:hover:text-slate-300">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+
+    <div id="waveform">
+        </div>
+
+    <div class="mt-4 flex items-center justify-between gap-4">
+        <button id="player-play-pause" type="button" class="flex items-center justify-center rounded-full size-12 bg-primary/20 text-slate-800 dark:text-white dark:bg-primary/30 hover:bg-primary/40 transition-colors">
+            <span id="player-play-icon" class="material-symbols-outlined text-3xl">play_arrow</span>
+            <span id="player-pause-icon" class="material-symbols-outlined text-3xl hidden">pause</span>
+        </button>
+        
+        <div class="text-sm text-slate-600 dark:text-slate-400 font-mono">
+            <span id="player-current-time">0:00</span> / <span id="player-total-time">0:00</span>
+        </div>
+    </div>
+</div>
+
+
+</div> <script>
+    // Helper function seconds ko m:ss format mein badalne ke liye
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- UPLOAD MODAL SCRIPT (Existing) ---
+        const fab = document.getElementById('upload-fab');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const uploadModal = document.getElementById('upload-modal');
+        const cancelButton = document.getElementById('cancel-button');
+        const uploadForm = document.getElementById('upload-form');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // ✅ FIX: Check karein ki fab element page par hai ya nahi
+        if (fab) {
+            fab.addEventListener('click', () => {
+                modalBackdrop.style.display = 'block';
+                uploadModal.style.display = 'block';
+            });
+        }
+
+        function closeUploadModal() {
+            modalBackdrop.style.display = 'none';
+            uploadModal.style.display = 'none';
+        }
+        
+        cancelButton.addEventListener('click', closeUploadModal);
+        modalBackdrop.addEventListener('click', closeUploadModal);
+
+        uploadForm.addEventListener('submit', () => {
+            const fileInput = document.getElementById('audio_file');
+            if (fileInput.files.length > 0) {
+                closeUploadModal();
+                loadingOverlay.style.display = 'flex';
+            }
+        });
+
+        
+        // --- ✅ NAYA: AUDIO PLAYER SCRIPT ---
+        
+        // Player Modal elements
+        // ✅ FIX: Sahi backdrop ID use karein
+        const playerModalBackdrop = document.getElementById('player-modal-backdrop');
+        const playerModal = document.getElementById('audio-player-modal');
+        const playerCloseButton = document.getElementById('player-close-button');
+        const allPlayButtons = document.querySelectorAll('.open-player-button');
+
+        // Player controls
+        const playerTitle = document.getElementById('player-title');
+        const playPauseButton = document.getElementById('player-play-pause');
+        const playIcon = document.getElementById('player-play-icon');
+        const pauseIcon = document.getElementById('player-pause-icon');
+        const currentTimeSpan = document.getElementById('player-current-time');
+        const totalTimeSpan = document.getElementById('player-total-time');
+
+        // WaveSurfer ko initialize karna
+        const waveSurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: '#a8a29e', // wave ka rang (dark mode compatible)
+            progressColor: '#30d9e8', // 'primary' color
+            height: 96, // 6rem
+            barWidth: 3,
+            barRadius: 3,
+            barGap: 3,
+            cursorWidth: 2,
+            cursorColor: '#112021', // dark bg
+            responsive: true
+        });
+
+        // --- WaveSurfer Event Listeners ---
+        
+        // Audio load hone par
+        waveSurfer.on('ready', (duration) => {
+            totalTimeSpan.textContent = formatTime(duration);
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+            waveSurfer.play(); // Load hotey hi play karein
+        });
+
+        // Audio play hotey waqt
+        waveSurfer.on('timeupdate', (currentTime) => {
+            currentTimeSpan.textContent = formatTime(currentTime);
+        });
+
+        // Audio khatam hone par
+        waveSurfer.on('finish', () => {
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+            waveSurfer.seekTo(0); // Shuru mein wapas le jayein
+        });
+        
+        // Play/Pause button click
+        playPauseButton.addEventListener('click', () => {
+            waveSurfer.playPause();
+            const isPlaying = waveSurfer.isPlaying();
+            playIcon.style.display = isPlaying ? 'none' : 'block';
+            pauseIcon.style.display = isPlaying ? 'block' : 'none';
+        });
+
+
+        // --- Modal Control Functions ---
+        
+        function openPlayerModal(audioUrl, audioTitle) {
+            playerTitle.textContent = audioTitle;
+            currentTimeSpan.textContent = '0:00';
+            totalTimeSpan.textContent = '0:00'; // Loading...
+            
+            // Naya audio load karein
+            waveSurfer.load(audioUrl);
+            
+            // ✅ FIX: Sahi backdrop ko dikhayein
+            playerModalBackdrop.style.display = 'block';
+            playerModal.style.display = 'block';
+        }
+
+        function closePlayerModal() {
+            waveSurfer.stop(); // Audio ko rokein
+            // ✅ FIX: Sahi backdrop ko chupayein
+            playerModalBackdrop.style.display = 'none';
+            playerModal.style.display = 'none';
+            playIcon.style.display = 'block'; // Icons reset karein
+            pauseIcon.style.display = 'none';
+        }
+
+        // Har card ke play button par listener lagayein
+        allPlayButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const url = e.currentTarget.dataset.audioUrl;
+                const title = e.currentTarget.dataset.audioTitle;
+                openPlayerModal(url, title);
+            });
+        });
+
+        // Modal band karne ke listeners
+        playerCloseButton.addEventListener('click', closePlayerModal);
+        playerModalBackdrop.addEventListener('click', closePlayerModal);
+
+        const recordFab = document.getElementById('record-fab');
+        let isRecording = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let micStream = null;
+        let sysStream = null;
+        let audioCtx = null;
+        let dest = null;
+
+        async function getMicStream() {
+            return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 } });
+        }
+
+        async function getSystemAudioStream() {
+            try {
+                const sys = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                const audioTracks = sys.getAudioTracks();
+                if (audioTracks && audioTracks.length > 0) return sys;
+                sys.getTracks().forEach(t => t.stop());
+                return null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function cleanupStreams() {
+            if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+            if (sysStream) { sysStream.getTracks().forEach(t => t.stop()); sysStream = null; }
+            if (audioCtx) { try { audioCtx.close(); } catch(_){} audioCtx = null; }
+            dest = null;
+        }
+
+        function createFileFromBlob(blob) {
+            const ts = new Date();
+            const pad = n => (n < 10 ? '0' + n : '' + n);
+            const fname = `Recording_${ts.getFullYear()}-${pad(ts.getMonth()+1)}-${pad(ts.getDate())}_${pad(ts.getHours())}-${pad(ts.getMinutes())}-${pad(ts.getSeconds())}.webm`;
+            return new File([blob], fname, { type: blob.type || 'audio/webm' });
+        }
+
+        async function startRecordingFlow() {
+            const includeSystem = window.confirm('Include system audio (tab/desktop audio)? Click OK to include, Cancel for mic only.');
+            micStream = await getMicStream();
+            if (!micStream) return;
+            if (includeSystem) sysStream = await getSystemAudioStream();
+
+            let targetStream = null;
+            if (sysStream) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                dest = audioCtx.createMediaStreamDestination();
+                const micSource = audioCtx.createMediaStreamSource(micStream);
+                micSource.connect(dest);
+                const sysSource = audioCtx.createMediaStreamSource(sysStream);
+                sysSource.connect(dest);
+                targetStream = dest.stream;
+            } else {
+                targetStream = micStream;
+            }
+
+            recordedChunks = [];
+            let options = { mimeType: 'audio/webm;codecs=opus' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) options = {};
+            mediaRecorder = new MediaRecorder(targetStream, options);
+            mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: recordedChunks[0]?.type || 'audio/webm' });
+                const file = createFileFromBlob(blob);
+                const fileInput = document.getElementById('audio_file');
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                const titleInput = document.getElementById('title');
+                let defaultTitle = file.name.replace(/\.webm$/i, '');
+                let title = window.prompt('Enter a title for this recording:', defaultTitle) || defaultTitle;
+                if (titleInput) titleInput.value = title;
+                // Auto-submit the existing upload form so backend analysis starts immediately
+                if (typeof uploadForm.requestSubmit === 'function') {
+                    uploadForm.requestSubmit();
+                } else {
+                    uploadForm.submit();
+                }
+                cleanupStreams();
+            };
+            mediaRecorder.start(1000);
+        }
+
+        function stopRecordingFlow() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            isRecording = false;
+            recordFab.classList.remove('bg-red-600');
+            recordFab.classList.add('bg-red-500');
+            recordFab.querySelector('span.material-symbols-outlined').textContent = 'mic';
+            recordFab.querySelector('span.truncate').textContent = 'Start Recording';
+        }
+
+        recordFab.addEventListener('click', async () => {
+            if (!isRecording) {
+                isRecording = true;
+                recordFab.classList.remove('bg-red-500');
+                recordFab.classList.add('bg-red-600');
+                recordFab.querySelector('span.material-symbols-outlined').textContent = 'stop';
+                recordFab.querySelector('span.truncate').textContent = 'Stop Recording';
+                try {
+                    await startRecordingFlow();
+                } catch (e) {
+                    isRecording = false;
+                    recordFab.classList.remove('bg-red-600');
+                    recordFab.classList.add('bg-red-500');
+                    recordFab.querySelector('span.material-symbols-outlined').textContent = 'mic';
+                    recordFab.querySelector('span.truncate').textContent = 'Start Recording';
+                    cleanupStreams();
+                    alert('Unable to start recording. Please grant permissions.');
+                }
+            } else {
+                stopRecordingFlow();
+            }
+        });
+    });
+</script>
+</body></html>
